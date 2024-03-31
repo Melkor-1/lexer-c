@@ -1,6 +1,6 @@
 CC	:= gcc-13
 
-CFLAGS 	+= -std=c2x
+CFLAGS 	+= -std=c99
 CFLAGS 	+= -DNDEBUG
 CFLAGS 	+= -g3
 CFLAGS 	+= -ggdb
@@ -44,8 +44,11 @@ test: $(TEST_TARGET)
 $(BINDIR) $(TEST_BINDIR):
 	mkdir -p $@
 
-clean:
+rclean:
 	rm -rf $(BINDIR)
+
+tclean:
+	rm -rf $(TEST_BINDIR)
 
 fclean_repl:
 	rm $(TARGET) 

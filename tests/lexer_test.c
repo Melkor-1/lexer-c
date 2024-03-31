@@ -139,7 +139,11 @@ int main(void)
             "return false;"
             "}"
             "10 == 10;"
-            "10 != 9;",
+            "10 != 9;"
+            "\"foobar\""
+            "\" foo bar \""
+            "[1, 2];"
+            "{\"foo\": \"bar\"}",
             (const test[]) {
         { TOK_LET,          "let"   },
         { TOK_IDENT,        "five"  },
@@ -214,6 +218,19 @@ int main(void)
         { TOK_NOT_EQ,       "!="    },
         { TOK_INT,          "9"     },
         { TOK_SEMICOLON,    ";"     },
+        { TOK_STRING,       "foobar"},
+        { TOK_STRING,    " foo bar "},
+        { TOK_LBRACKET,     "["     },
+        { TOK_INT,          "1"     },
+        { TOK_COMMA,        ","     },
+        { TOK_INT,          "2"     },
+        { TOK_RBRACKET,     "]"     },
+        { TOK_SEMICOLON,    ";"     },
+        { TOK_LBRACE,       "{"     },
+        { TOK_STRING,       "foo"   },
+        { TOK_COLON,        ":"     },
+        { TOK_STRING,       "bar"   },
+        { TOK_RBRACE,       "}"     },
         { TOK_EOF,          ""      },
         { -1,               NULL    },
     });

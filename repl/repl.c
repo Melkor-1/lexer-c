@@ -13,6 +13,7 @@ int main(void)
 
     while (true) {
         fputs(">> ", stdout);
+        fflush(stdout);
 
         size_t len = 0;
         char *const line = util_readline(stdin, &len);

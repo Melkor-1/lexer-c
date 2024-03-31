@@ -72,6 +72,7 @@ static bool is_dynamic_alloc(TokenType t)
     return (t == TOK_INT   
             || t == TOK_ILLEGAL 
             || t == TOK_IDENT
+            || t == TOK_STRING
             || is_kw(t));
 }
 

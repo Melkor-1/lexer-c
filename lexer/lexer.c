@@ -11,22 +11,14 @@
 
 static void read_char(Lexer l[static 1])
 {
-    if (l->read_pos >= l->input_len) {
-        l->ch = '\0';
-    } else {
-        l->ch = l->input[l->read_pos];
-    }
-
+    l->ch = l->read_pos >= l->input_len ? '\0' : l->input[l->read_pos];
     l->pos = l->read_pos;
     ++l->read_pos;
 }
 
 static char peek_char(Lexer l)
 {
-    if (l.read_pos >= l.input_len) {
-        return '\0';
-    } 
-    return l.input[l.read_pos];
+    return l.read_pos >= l.input_len ? '\0' : l.input[l.read_pos];
 }
 
 static int is_letter(char ch)
@@ -37,11 +29,7 @@ static int is_letter(char ch)
 static const char *read_ident(Lexer l[static 1], size_t len[static 1])
 {
     const size_t orig_pos = l->pos;
-
-    while (is_letter(l->ch) != 0) {
-        read_char(l);
-    }
-    
+    for (; is_letter(l->ch) != 0; read_char(l)) ;
     *len = l->pos - orig_pos;
     return l->input + orig_pos;
 }
@@ -49,20 +37,29 @@ static const char *read_ident(Lexer l[static 1], size_t len[static 1])
 static const char *read_int(Lexer l[static 1], size_t len[static 1])
 {
     const size_t orig_pos = l->pos;
+    for (; isdigit((unsigned char)l->ch) != 0; read_char(l)) ;
+    *len = l->pos - orig_pos;
+    return l->input + orig_pos;
+}
 
-    while (isdigit((unsigned char)l->ch) != 0) {
+static const char *read_string(Lexer l[static 1], size_t len[static 1])
+{
+    /* Monkey doesn't support escape characters. 
+     * TODO: Perhaps return NULL on EOF. 
+     */
+    const size_t orig_pos = l->pos + 1;
+
+    do {
         read_char(l);
-    }
-    
+    } while (l->ch != '"' && l->ch != '\0');
+
     *len = l->pos - orig_pos;
     return l->input + orig_pos;
 }
 
 static void skip_whitespace(Lexer l[static 1])
 {
-    while (isspace((unsigned char)l->ch) != 0) {
-        read_char(l);
-    }
+    for (; isspace((unsigned char)l->ch) != 0; read_char(l)) ;
 }
 
 Lexer lexer_new(const char input[static 1])
@@ -123,8 +120,16 @@ Token lexer_next(Lexer l[static 1])
             t = token_new(TOK_GT, ">");
             break;
 
+        case ',':
+            t = token_new(TOK_COMMA, ",");
+            break;
+
         case ';':
             t = token_new(TOK_SEMICOLON, ";");
+            break;
+
+        case ':':
+            t = token_new(TOK_COLON, ":");
             break;
 
         case '(':
@@ -135,10 +140,6 @@ Token lexer_next(Lexer l[static 1])
             t = token_new(TOK_RPAREN, ")");
             break;
 
-        case ',':
-            t = token_new(TOK_COMMA, ",");
-            break;
-
         case '{':
             t = token_new(TOK_LBRACE, "{");
             break;
@@ -147,9 +148,24 @@ Token lexer_next(Lexer l[static 1])
             t = token_new(TOK_RBRACE, "}");
             break;
 
+        case '[':
+            t = token_new(TOK_LBRACKET, "[");
+            break;
+
+        case ']':
+            t = token_new(TOK_RBRACKET, "]");
+            break;
+
         case '\0':
             t = token_new(TOK_EOF, "");
             break;
+
+        case '"': {
+            size_t len = 0;
+            t.lit = read_string(l, &len);
+            t.type = TOK_STRING;
+            t.lit = util_memstr(len, t.lit);
+        } break;
 
         default:
             if (is_letter(l->ch) != 0) {
