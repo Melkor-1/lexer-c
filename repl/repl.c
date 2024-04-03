@@ -19,12 +19,11 @@ int main(void)
         char *const line = util_readline(stdin, &len);
 
         if (line == NULL) {
-            if (feof(stdin)) {
-                break;
-            } else {
+            if (!feof(stdin)) {
                 fprintf(stderr, "error: an unexpected error occured.\n");
                 return EXIT_FAILURE;
             }
+            break;
         }
         len[line] = '\0';
         Lexer l = lexer_new(line);

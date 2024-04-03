@@ -5,10 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define GEN_STR(STR) #STR,
 
 static const char *const tok_strs[] = {
-    FOREACH_TOK(GEN_STR)
+    #define GEN_STRING_COMMA(STR) #STR,
+    FOREACH_TOK(GEN_STRING_COMMA)
+    #undef GEN_STRING_COMMA
+    #undef FOREACH_TOK
 };
 
 static const size_t tok_strs_count = sizeof tok_strs / sizeof *tok_strs;

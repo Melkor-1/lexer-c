@@ -3,8 +3,6 @@
 
 #include "../token/token.h"
 
-// This shouldn't need to be here. No client needs to learn the internals.
-// How do we change the API to fix this?
 typedef struct lexer {
     const char *input;
     size_t      input_len;

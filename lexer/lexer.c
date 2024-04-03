@@ -1,6 +1,5 @@
-// TODO: Change the API to hide the lexer's internals.
-
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,40 +20,52 @@ static char peek_char(Lexer l)
     return l.read_pos >= l.input_len ? '\0' : l.input[l.read_pos];
 }
 
-static int is_letter(char ch)
+static bool is_letter(char ch)
 {
     return ch == '_' || isalpha((unsigned char)ch) != 0;
 }
 
-static const char *read_ident(Lexer l[static 1], size_t len[static 1])
+static Token read_ident(Lexer l[static 1])
 {
     const size_t orig_pos = l->pos;
     for (; is_letter(l->ch) != 0; read_char(l)) ;
-    *len = l->pos - orig_pos;
-    return l->input + orig_pos;
+    return (Token) {
+        .type = token_lookup_ident(l->pos - orig_pos, l->input + orig_pos ),
+        .lit = util_memstr(l->pos - orig_pos, l->input + orig_pos)
+    };
 }
 
-static const char *read_int(Lexer l[static 1], size_t len[static 1])
+static Token read_int(Lexer l[static 1])
 {
     const size_t orig_pos = l->pos;
     for (; isdigit((unsigned char)l->ch) != 0; read_char(l)) ;
-    *len = l->pos - orig_pos;
-    return l->input + orig_pos;
+    return  (Token) {
+        .type = TOK_INT,
+        .lit = util_memstr(l->pos - orig_pos, l->input + orig_pos)
+    };
+
 }
 
-static const char *read_string(Lexer l[static 1], size_t len[static 1])
+static Token read_string(Lexer l[static 1])
 {
-    /* Monkey doesn't support escape characters. 
-     * TODO: Perhaps return NULL on EOF. 
-     */
+    /* Monkey doesn't support escape characters.  */
     const size_t orig_pos = l->pos + 1;
-
     do {
         read_char(l);
     } while (l->ch != '"' && l->ch != '\0');
+    
+    if (l->ch == '\0') {
+        return (Token) {
+            .type = TOK_ILLEGAL,
+            .lit = util_memstr(l->pos - orig_pos, l->input + orig_pos)
+        };
+    }
 
-    *len = l->pos - orig_pos;
-    return l->input + orig_pos;
+    read_char(l);
+    return (Token) {
+        .type = TOK_STRING,
+        .lit = util_memstr(l->pos - orig_pos - 1, l->input + orig_pos)
+    };
 }
 
 static void skip_whitespace(Lexer l[static 1])
@@ -160,26 +171,14 @@ Token lexer_next(Lexer l[static 1])
             t = token_new(TOK_EOF, "");
             break;
 
-        case '"': {
-            size_t len = 0;
-            t.lit = read_string(l, &len);
-            t.type = TOK_STRING;
-            t.lit = util_memstr(len, t.lit);
-        } break;
+        case '"': 
+            return read_string(l);
 
         default:
             if (is_letter(l->ch) != 0) {
-                size_t len = 0;
-                t.lit = read_ident(l, &len);
-                t.type = token_lookup_ident(len, t.lit);
-                t.lit = util_memstr(len, t.lit);
-                return t;
+                return read_ident(l);
             } else if (isdigit((unsigned char)l->ch) != 0) {
-                size_t len = 0;
-                t.type = TOK_INT;
-                t.lit = read_int(l, &len);
-                t.lit = util_memstr(len, t.lit);
-                return t;
+                return read_int(l);
             } 
             t = token_new(TOK_ILLEGAL, util_memstr(1, &l->ch));
     }

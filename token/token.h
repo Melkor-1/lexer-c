@@ -36,10 +36,11 @@
     _(TOK_ELSE)         \
     _(TOK_RETURN)       \
 
-#define GEN_ENUM(ENUM) ENUM,
 
 typedef enum {
-    FOREACH_TOK(GEN_ENUM)
+    #define GEN_ENUM_COMMA(ENUM) ENUM,
+    FOREACH_TOK(GEN_ENUM_COMMA)
+    #undef GEN_ENUM_COMMA
 } TokenType;
 
 typedef struct Token {
