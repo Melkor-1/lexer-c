@@ -22,13 +22,13 @@ static char peek_char(Lexer l)
 
 static bool is_letter(char ch)
 {
-    return ch == '_' || isalpha((unsigned char)ch) != 0;
+    return ch == '_' || isalpha((unsigned char)ch);
 }
 
 static Token read_ident(Lexer l[static 1])
 {
     const size_t orig_pos = l->pos;
-    for (; is_letter(l->ch) != 0; read_char(l)) ;
+    for (; is_letter(l->ch); read_char(l)) ;
     return (Token) {
         .type = token_lookup_ident(l->pos - orig_pos, l->input + orig_pos ),
         .lit = util_memstr(l->pos - orig_pos, l->input + orig_pos)
@@ -38,7 +38,7 @@ static Token read_ident(Lexer l[static 1])
 static Token read_int(Lexer l[static 1])
 {
     const size_t orig_pos = l->pos;
-    for (; isdigit((unsigned char)l->ch) != 0; read_char(l)) ;
+    for (; isdigit((unsigned char)l->ch); read_char(l)) ;
     return  (Token) {
         .type = TOK_INT,
         .lit = util_memstr(l->pos - orig_pos, l->input + orig_pos)
@@ -70,7 +70,7 @@ static Token read_string(Lexer l[static 1])
 
 static void skip_whitespace(Lexer l[static 1])
 {
-    for (; isspace((unsigned char)l->ch) != 0; read_char(l)) ;
+    for (; isspace((unsigned char)l->ch); read_char(l)) ;
 }
 
 Lexer lexer_new(const char input[static 1])
@@ -175,9 +175,9 @@ Token lexer_next(Lexer l[static 1])
             return read_string(l);
 
         default:
-            if (is_letter(l->ch) != 0) {
+            if (is_letter(l->ch)) {
                 return read_ident(l);
-            } else if (isdigit((unsigned char)l->ch) != 0) {
+            } else if (isdigit((unsigned char)l->ch)) {
                 return read_int(l);
             } 
             t = token_new(TOK_ILLEGAL, util_memstr(1, &l->ch));

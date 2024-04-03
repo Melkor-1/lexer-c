@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 static const char *const tok_strs[] = {
     #define GEN_STRING_COMMA(STR) #STR,
     FOREACH_TOK(GEN_STRING_COMMA)
